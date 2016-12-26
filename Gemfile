@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
 group :dist do
-  gem 'parslet'
+  gem 'parslet' #  5244
+  gem 'rltk'    # 32103
 end
 
 group :test do
