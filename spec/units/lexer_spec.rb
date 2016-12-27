@@ -46,6 +46,10 @@ describe Gitsh::Lexer do
       end
     end
 
+    it 'does not treat all \ characters in unquoted words as escapes' do
+      expect('\\a').to produce_tokens ['WORD(\\)', 'WORD(a)', 'EOS']
+    end
+
     it 'recognises variables' do
       expect('$foo').to produce_tokens ['VAR(foo)', 'EOS']
       expect('${foo}').to produce_tokens ['VAR(foo)', 'EOS']

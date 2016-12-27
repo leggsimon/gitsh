@@ -10,6 +10,7 @@ module Gitsh
 
     rule(/[^\s'"\\$#;&|]+/) { |t| [:WORD, t] }
     rule(/\\[\s'"\\$#;&|]/) { |t| [:WORD, t[1]] }
+    rule(/\\/) { |t| [:WORD, t] }
 
     rule(/#/) { push_state :comment }
     rule(/.*/, :comment) {}
