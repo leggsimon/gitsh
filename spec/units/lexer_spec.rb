@@ -4,7 +4,7 @@ require 'gitsh/lexer'
 RSpec::Matchers.define(:produce_tokens) do |expected|
   match do |actual|
     @expected = expected.join("\n")
-    @actual = Gitsh::Lexer.new.lex(actual).map(&:to_s).join("\n")
+    @actual = Gitsh::Lexer.lex(actual).map(&:to_s).join("\n")
     values_match? @expected, @actual
   end
 
@@ -12,7 +12,7 @@ RSpec::Matchers.define(:produce_tokens) do |expected|
 end
 
 describe Gitsh::Lexer do
-  describe '#lex' do
+  describe '.lex' do
     it 'recognises space separated words' do
       expect('foo bar').
         to produce_tokens ['WORD(foo)', 'SPACE', 'WORD(bar)', 'EOS']
