@@ -4,8 +4,7 @@ require 'gitsh/token_parser'
 describe Gitsh::TokenParser do
   describe '#parse' do
     it 'parses Git commands' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens([:WORD, 'commit'], [:EOS]))
 
@@ -17,8 +16,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses internal commands' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens([:WORD, ':echo'], [:EOS]))
 
@@ -30,8 +28,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses shell commands' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens([:WORD, '!ls'], [:EOS]))
 
@@ -43,8 +40,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses Git commands broken into multiple words' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'com'], [:WORD, 'mit'], [:EOS]
@@ -58,8 +54,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses commands with arguments' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE], [:WORD, 'WIP'],
@@ -78,8 +73,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses commands with variable arguments' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE], [:VAR, 'message'],
@@ -98,8 +92,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses commands with subshell arguments' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE],
@@ -118,8 +111,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses commands with composite arguments' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE],
@@ -169,8 +161,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses a command with a trailing semicolon' do
-      command = double(:command)
-      allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+      command = stub_command_factory
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SEMICOLON], [:EOS],
@@ -198,5 +189,11 @@ describe Gitsh::TokenParser do
 
   def env
     @env ||= instance_double(Gitsh::Environment)
+  end
+
+  def stub_command_factory
+    command = double(:command)
+    allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
+    command
   end
 end
