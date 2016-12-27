@@ -10,9 +10,16 @@ module Gitsh
     }.freeze
 
     class Environment < RLTK::Parser::Environment
-      def env
-        @env ||= Gitsh::Environment.new #FIXME: shared instance!
+      attr_reader :gitsh_env
+
+      def initialize(gitsh_env = nil)
+        @gitsh_env = gitsh_env
+        super()
       end
+    end
+
+    def initialize(gitsh_env)
+      @env = self.class::Environment.new(gitsh_env)
     end
 
     left :SEMICOLON
@@ -34,7 +41,7 @@ module Gitsh
 
         Commands::Factory.build(
           COMMAND_CLASS_BY_PREFIX.fetch(prefix),
-          env: env,
+          env: gitsh_env,
           command: command,
           args: (args || []),
         )

@@ -2,17 +2,17 @@ require 'spec_helper'
 require 'gitsh/token_parser'
 
 describe Gitsh::TokenParser do
-  describe '.parse' do
+  describe '#parse' do
     it 'parses Git commands' do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens([:WORD, 'commit'], [:EOS]))
+      result = parse(tokens([:WORD, 'commit'], [:EOS]))
 
       expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(command: 'commit', args: []),
+        env: env, command: 'commit', args: [],
       )
     end
 
@@ -20,12 +20,12 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens([:WORD, ':echo'], [:EOS]))
+      result = parse(tokens([:WORD, ':echo'], [:EOS]))
 
       expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::InternalCommand,
-        hash_including(command: 'echo', args: []),
+        env: env, command: 'echo', args: [],
       )
     end
 
@@ -33,12 +33,12 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens([:WORD, '!ls'], [:EOS]))
+      result = parse(tokens([:WORD, '!ls'], [:EOS]))
 
       expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::ShellCommand,
-        hash_including(command: 'ls', args: []),
+        env: env, command: 'ls', args: [],
       )
     end
 
@@ -46,14 +46,14 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'com'], [:WORD, 'mit'], [:EOS]
       ))
 
       expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(command: 'commit', args: []),
+        env: env, command: 'commit', args: [],
       )
     end
 
@@ -61,20 +61,19 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE], [:WORD, 'WIP'],
         [:EOS],
       ))
 
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(
-          command: 'commit',
-          args: [
-            Gitsh::Arguments::StringArgument.new('-m'),
-            Gitsh::Arguments::StringArgument.new('WIP'),
-          ],
-        ),
+        env: env,
+        command: 'commit',
+        args: [
+          Gitsh::Arguments::StringArgument.new('-m'),
+          Gitsh::Arguments::StringArgument.new('WIP'),
+        ],
       )
     end
 
@@ -82,20 +81,19 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE], [:VAR, 'message'],
         [:EOS],
       ))
 
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(
-          command: 'commit',
-          args: [
-            Gitsh::Arguments::StringArgument.new('-m'),
-            Gitsh::Arguments::VariableArgument.new('message'),
-          ],
-        ),
+        env: env,
+        command: 'commit',
+        args: [
+          Gitsh::Arguments::StringArgument.new('-m'),
+          Gitsh::Arguments::VariableArgument.new('message'),
+        ],
       )
     end
 
@@ -103,20 +101,19 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE],
         [:SUBSHELL, ':echo $message'], [:EOS],
       ))
 
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(
-          command: 'commit',
-          args: [
-            Gitsh::Arguments::StringArgument.new('-m'),
-            Gitsh::Arguments::Subshell.new(':echo $message', interpreter_factory: double),
-          ],
-        ),
+        env: env,
+        command: 'commit',
+        args: [
+          Gitsh::Arguments::StringArgument.new('-m'),
+          Gitsh::Arguments::Subshell.new(':echo $message', interpreter_factory: double),
+        ],
       )
     end
 
@@ -124,7 +121,7 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE],
         [:WORD, 'Written by: '],
         [:VAR, 'user.name'], [:EOS],
@@ -132,21 +129,20 @@ describe Gitsh::TokenParser do
 
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(
-          command: 'commit',
-          args: [
-            Gitsh::Arguments::StringArgument.new('-m'),
-            Gitsh::Arguments::CompositeArgument.new([
-              Gitsh::Arguments::StringArgument.new('Written by: '),
-              Gitsh::Arguments::VariableArgument.new('user.name'),
-            ]),
-          ],
-        ),
+        env: env,
+        command: 'commit',
+        args: [
+          Gitsh::Arguments::StringArgument.new('-m'),
+          Gitsh::Arguments::CompositeArgument.new([
+            Gitsh::Arguments::StringArgument.new('Written by: '),
+            Gitsh::Arguments::VariableArgument.new('user.name'),
+          ]),
+        ],
       )
     end
 
     it 'parses two commands combined with &&' do
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'add'], [:SPACE], [:WORD, '.'],
         [:AND], [:WORD, 'commit'], [:EOS],
       ))
@@ -155,7 +151,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses two commands combined with ||' do
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'add'], [:SPACE], [:WORD, '.'],
         [:OR], [:WORD, ':echo'], [:SPACE], [:WORD, 'Oops'], [:EOS],
       ))
@@ -164,7 +160,7 @@ describe Gitsh::TokenParser do
     end
 
     it 'parses two commands combined with ;' do
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'add'], [:SPACE], [:WORD, '.'],
         [:SEMICOLON], [:WORD, 'commit'], [:EOS],
       ))
@@ -176,16 +172,20 @@ describe Gitsh::TokenParser do
       command = double(:command)
       allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
 
-      result = described_class.parse(tokens(
+      result = parse(tokens(
         [:WORD, 'commit'], [:SEMICOLON], [:EOS],
       ))
 
       expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
-        hash_including(command: 'commit', args: []),
+        env: env, command: 'commit', args: [],
       )
     end
+  end
+
+  def parse(tokens)
+    described_class.new(env).parse(tokens)
   end
 
   def tokens(*tokens)
@@ -194,5 +194,9 @@ describe Gitsh::TokenParser do
       pos = RLTK::StreamPosition.new(i, 1, i, 10, nil)
       RLTK::Token.new(type, value, pos)
     end
+  end
+
+  def env
+    @env ||= instance_double(Gitsh::Environment)
   end
 end
