@@ -2,61 +2,67 @@ require 'rltk'
 
 module Gitsh
   class TokenParser < RLTK::Parser
+    COMMAND_PREFIX_MATCHER = /^([:!])?(.+)$/
+    COMMAND_CLASS_BY_PREFIX = {
+      nil => Gitsh::Commands::GitCommand,
+      ':' => Gitsh::Commands::InternalCommand,
+      '!' => Gitsh::Commands::ShellCommand,
+    }.freeze
+
     class Environment < RLTK::Parser::Environment
       def env
-        #FIXME
+        @env ||= Gitsh::Environment.new #FIXME: shared instance!
       end
+    end
 
-      def command_class(command)
-        Commands::GitCommand
-      end
+    left :SEMICOLON
+    left :OR
+    left :AND
+
+    production(:program, 'SPACE? commands SEMICOLON?') { |_, c, _| c }
+
+    production(:commands) do
+      clause('command') { |c| c }
+      clause('commands SEMICOLON commands') { |c1, _, c2| Commands::Tree::Multi.new(c1, c2) }
+      clause('commands OR commands') { |c1, _, c2| Commands::Tree::Or.new(c1, c2) }
+      clause('commands AND commands') { |c1, _, c2| Commands::Tree::And.new(c1, c2) }
     end
 
     production(:command) do
-      clause('compound_word') do |word|
+      clause('word argument_list?') do |word, args|
+        prefix, command = COMMAND_PREFIX_MATCHER.match(word).values_at(1, 2)
+
         Commands::Factory.build(
-          command_class(word),
+          COMMAND_CLASS_BY_PREFIX.fetch(prefix),
           env: env,
-          command: word,
-          args: [],
-        )
-      end
-      clause('compound_word SPACE argument_list') do |word, _, args|
-        Commands::Factory.build(
-          command_class(word),
-          env: env,
-          command: word,
-          args: args,
+          command: command,
+          args: (args || []),
         )
       end
     end
 
-    list(:argument_list, :compound_argument, :SPACE)
-
-    production(:compound_argument) do
-      clause('argument') { |arg| arg }
-      clause('argument compound_argument') do |arg, compoud|
-        Arguments::CompositeArgument.new([arg, compoud])
-      end
+    production(:argument_list) do
+      clause('SPACE argument') { |_, arg| [arg] }
+      clause('argument_list SPACE argument') { |list, _, arg| list + [arg] }
     end
 
     production(:argument) do
-      clause(:compound_word) { |word| Arguments::StringArgument.new(word) }
+      clause('argument_part') { |part| part }
+      clause('argument_part argument') do |part, argument|
+        Arguments::CompositeArgument.new([part, argument])
+      end
+    end
+
+    production(:argument_part) do
+      clause(:word) { |word| Arguments::StringArgument.new(word) }
       clause(:VAR) { |var| Arguments::VariableArgument.new(var) }
-      clause(:compoud_subshell) do |subshell|
+      clause(:subshell) do |subshell|
         Arguments::Subshell.new(subshell, interpreter_factory: Interpreter)
       end
     end
 
-    production(:compound_word) do
-      clause('WORD') { |word| word }
-      clause('WORD compound_word') { |word, compound| word + compound }
-    end
-
-    production(:compoud_subshell) do
-      clause('SUBSHELL') { |subshell| subshell }
-      clause('SUBSHELL compoud_subshell') { |subshell, compoud| subshell + compoud }
-    end
+    production(:word, 'WORD+') { |words| words.inject(:+) }
+    production(:subshell, 'SUBSHELL+') { |subshells| subshells.inject(:+) }
 
     finalize
   end
