@@ -1,4 +1,5 @@
 require 'rltk'
+require 'gitsh/commands/factory'
 require 'gitsh/commands/git_command'
 require 'gitsh/commands/internal_command'
 require 'gitsh/commands/shell_command'

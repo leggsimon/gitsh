@@ -1,7 +1,7 @@
-require 'parslet'
+require 'rltk'
 
 module Gitsh
-  class Parser < Parslet::Parser
+  class Lexer < RLTK::Lexer
     class CharacterClass
       attr_reader :characters
 

@@ -1,28 +1,28 @@
 require 'parslet'
-require 'gitsh/parser/character_class'
+require 'gitsh/lexer/character_class'
 require 'gitsh/transformer'
 
 module Gitsh
   class Parser < Parslet::Parser
-    UNQUOTED_STRING_TERMINATORS = CharacterClass.new([
+    UNQUOTED_STRING_TERMINATORS = Lexer::CharacterClass.new([
       ' ', "\t", "\r", "\n", "\f",  # Whitespace
       "'", '"',                     # Quoted string delimiter
       '&', '|', ';',                # Command separator
       '#',                          # Comment prefix
     ]).freeze
 
-    UNQUOTED_STRING_ESCAPABLES = UNQUOTED_STRING_TERMINATORS + CharacterClass.new([
+    UNQUOTED_STRING_ESCAPABLES = UNQUOTED_STRING_TERMINATORS + Lexer::CharacterClass.new([
       '\\',                         # Escape character
       '$',                          # Variable or sub-shell prefix
     ]).freeze
 
-    SOFT_STRING_ESCAPABLES = CharacterClass.new([
+    SOFT_STRING_ESCAPABLES = Lexer::CharacterClass.new([
       '\\',                         # Escape character
       '$',                          # Variable or sub-shell prefix
       '"',                          # String terminator
     ]).freeze
 
-    HARD_STRING_ESCAPABLES = CharacterClass.new([
+    HARD_STRING_ESCAPABLES = Lexer::CharacterClass.new([
       '\\',                         # Escape character
       "'",                          # String terminator
     ]).freeze

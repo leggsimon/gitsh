@@ -1,9 +1,9 @@
 require 'rltk/lexer'
-require 'gitsh/parser/character_class'
+require 'gitsh/lexer/character_class'
 
 module Gitsh
   class Lexer < RLTK::Lexer
-    UNQUOTED_STRING_ESCAPABLES = Parser::CharacterClass.new([
+    UNQUOTED_STRING_ESCAPABLES = CharacterClass.new([
       ' ', "\t", "\r", "\n", "\f",  # Whitespace
       "'", '"',                     # Quoted string delimiter
       '&', '|', ';',                # Command separator
@@ -12,13 +12,13 @@ module Gitsh
       '$',                          # Variable or sub-shell prefix
     ]).freeze
 
-    SOFT_STRING_ESCAPABLES = Parser::CharacterClass.new([
+    SOFT_STRING_ESCAPABLES = CharacterClass.new([
       '\\',                         # Escape character
       '$',                          # Variable or sub-shell prefix
       '"',                          # String terminator
     ]).freeze
 
-    HARD_STRING_ESCAPABLES = Parser::CharacterClass.new([
+    HARD_STRING_ESCAPABLES = CharacterClass.new([
       '\\',                         # Escape character
       "'",                          # String terminator
     ]).freeze

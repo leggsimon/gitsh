@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'gitsh/parser/character_class'
+require 'gitsh/lexer/character_class'
 require 'parslet'
 
-describe Gitsh::Parser::CharacterClass do
+describe Gitsh::Lexer::CharacterClass do
   describe '#characters' do
     it 'returns the characters passed to the initializer' do
       chars = ['a', 'e', 'i', 'o', 'u']
