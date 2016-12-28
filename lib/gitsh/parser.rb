@@ -1,4 +1,8 @@
 require 'rltk'
+require 'gitsh/arguments/string_argument'
+require 'gitsh/arguments/composite_argument'
+require 'gitsh/arguments/variable_argument'
+require 'gitsh/arguments/subshell'
 require 'gitsh/commands/factory'
 require 'gitsh/commands/git_command'
 require 'gitsh/commands/internal_command'
