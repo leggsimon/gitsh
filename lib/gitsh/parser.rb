@@ -6,7 +6,7 @@ require 'gitsh/commands/shell_command'
 require 'gitsh/commands/noop'
 
 module Gitsh
-  class TokenParser < RLTK::Parser
+  class Parser < RLTK::Parser
     COMMAND_PREFIX_MATCHER = /^([:!])?(.+)$/
     COMMAND_CLASS_BY_PREFIX = {
       nil => Gitsh::Commands::GitCommand,

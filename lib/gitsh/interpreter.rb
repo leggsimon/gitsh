@@ -1,14 +1,14 @@
 require 'rltk'
 require 'gitsh/error'
 require 'gitsh/lexer'
-require 'gitsh/token_parser'
+require 'gitsh/parser'
 
 module Gitsh
   class Interpreter
     def initialize(options)
       @env = options.fetch(:env)
       @lexer = options.fetch(:lexer, Lexer)
-      @parser_factory = options.fetch(:parser_factory, TokenParser)
+      @parser_factory = options.fetch(:parser_factory, Parser)
       @input_strategy = options.fetch(:input_strategy)
     end
 

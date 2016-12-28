@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'gitsh/token_parser'
+require 'gitsh/parser'
 
-describe Gitsh::TokenParser do
+describe Gitsh::Parser do
   describe '#parse' do
     it 'parses Git commands' do
       command = stub_command_factory
