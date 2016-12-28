@@ -1,4 +1,7 @@
 require 'rltk'
+require 'gitsh/commands/git_command'
+require 'gitsh/commands/internal_command'
+require 'gitsh/commands/shell_command'
 
 module Gitsh
   class TokenParser < RLTK::Parser
