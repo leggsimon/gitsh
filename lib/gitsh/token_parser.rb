@@ -29,7 +29,7 @@ module Gitsh
     left :OR
     left :AND
 
-    production(:program, 'SPACE? commands SEMICOLON?') { |_, c, _| c }
+    production(:program, 'SPACE? commands SEMICOLON? SPACE?') { |_, c, _, _| c }
 
     production(:commands) do
       clause('command') { |c| c }
