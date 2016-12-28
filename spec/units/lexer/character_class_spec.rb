@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'gitsh/lexer/character_class'
-require 'parslet'
 
 describe Gitsh::Lexer::CharacterClass do
   describe '#characters' do
@@ -20,18 +19,6 @@ describe Gitsh::Lexer::CharacterClass do
       result = a + b
 
       expect(result.characters).to eq ['a', 'b']
-    end
-  end
-
-  describe '#parser_atom' do
-    it 'returns a Parslet::Atom matching the chracters in the class' do
-      vowels = described_class.new(['a', 'e', 'i', 'o', 'u'])
-
-      atom = vowels.parser_atom
-
-      expect(atom).to be_a Parslet::Atoms::Base
-      expect(atom).to parse('a')
-      expect(atom).not_to parse('b')
     end
   end
 

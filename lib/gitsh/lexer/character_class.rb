@@ -13,10 +13,6 @@ module Gitsh
         self.class.new(characters + other.characters)
       end
 
-      def parser_atom
-        Parslet.match(to_regexp)
-      end
-
       def to_regexp
         Regexp.new("[#{Regexp.escape(characters.join)}]")
       end
