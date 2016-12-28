@@ -1,15 +1,36 @@
 require 'rltk/lexer'
+require 'gitsh/parser/character_class'
 
 module Gitsh
   class Lexer < RLTK::Lexer
+    UNQUOTED_STRING_ESCAPABLES = Parser::CharacterClass.new([
+      ' ', "\t", "\r", "\n", "\f",  # Whitespace
+      "'", '"',                     # Quoted string delimiter
+      '&', '|', ';',                # Command separator
+      '#',                          # Comment prefix
+      '\\',                         # Escape character
+      '$',                          # Variable or sub-shell prefix
+    ]).freeze
+
+    SOFT_STRING_ESCAPABLES = Parser::CharacterClass.new([
+      '\\',                         # Escape character
+      '$',                          # Variable or sub-shell prefix
+      '"',                          # String terminator
+    ]).freeze
+
+    HARD_STRING_ESCAPABLES = Parser::CharacterClass.new([
+      '\\',                         # Escape character
+      "'",                          # String terminator
+    ]).freeze
+
     rule(/\s*;\s*/) { :SEMICOLON }
     rule(/\s*&&\s*/) { :AND }
     rule(/\s*\|\|\s*/) { :OR }
 
     rule(/\s+/) { :SPACE }
 
-    rule(/[^\s'"\\$#;&|]+/) { |t| [:WORD, t] }
-    rule(/\\[\s'"\\$#;&|]/) { |t| [:WORD, t[1]] }
+    rule(/#{UNQUOTED_STRING_ESCAPABLES.to_negative_regexp}+/) { |t| [:WORD, t] }
+    rule(/\\#{UNQUOTED_STRING_ESCAPABLES.to_regexp}/) { |t| [:WORD, t[1]] }
     rule(/\\/) { |t| [:WORD, t] }
 
     rule(/#/) { push_state :comment }
@@ -18,15 +39,23 @@ module Gitsh
 
     rule(/''/) { [:WORD, ''] }
     rule(/'/) { push_state :hard_string }
-    rule(/[^'\\]+/, :hard_string) { |t| [:WORD, t] }
-    rule(/\\[\\']/, :hard_string) { |t| [:WORD, t[1]] }
+    rule(/#{HARD_STRING_ESCAPABLES.to_negative_regexp}+/, :hard_string) do |t|
+      [:WORD, t]
+    end
+    rule(/\\#{HARD_STRING_ESCAPABLES.to_regexp}/, :hard_string) do |t|
+      [:WORD, t[1]]
+    end
     rule(/\\/, :hard_string) { [:WORD, '\\'] }
     rule(/'/, :hard_string) { pop_state }
 
     rule(/""/) { [:WORD, ''] }
     rule(/"/) { push_state :soft_string }
-    rule(/[^"\\$]+/, :soft_string) { |t| [:WORD, t] }
-    rule(/\\["\\$]/, :soft_string) { |t| [:WORD, t[1]] }
+    rule(/#{SOFT_STRING_ESCAPABLES.to_negative_regexp}+/, :soft_string) do |t|
+      [:WORD, t]
+    end
+    rule(/\\#{SOFT_STRING_ESCAPABLES.to_regexp}/, :soft_string) do |t|
+      [:WORD, t[1]]
+    end
     rule(/\\/, :soft_string) { [:WORD, '\\'] }
     rule(/"/, :soft_string) { pop_state }
 

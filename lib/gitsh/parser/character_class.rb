@@ -20,6 +20,10 @@ module Gitsh
       def to_regexp
         Regexp.new("[#{Regexp.escape(characters.join)}]")
       end
+
+      def to_negative_regexp
+        Regexp.new("[^#{Regexp.escape(characters.join)}]")
+      end
     end
   end
 end
