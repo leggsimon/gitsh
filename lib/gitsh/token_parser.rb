@@ -2,6 +2,7 @@ require 'rltk'
 require 'gitsh/commands/git_command'
 require 'gitsh/commands/internal_command'
 require 'gitsh/commands/shell_command'
+require 'gitsh/commands/noop'
 
 module Gitsh
   class TokenParser < RLTK::Parser
@@ -29,7 +30,10 @@ module Gitsh
     left :OR
     left :AND
 
-    production(:program, 'SPACE? commands SEMICOLON? SPACE?') { |_, c, _, _| c }
+    production(:program) do
+      clause('SPACE? commands SEMICOLON? SPACE?') { |_, c, _, _| c }
+      clause('SPACE?') { |_| Commands::Noop.new }
+    end
 
     production(:commands) do
       clause('command') { |c| c }

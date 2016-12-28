@@ -173,6 +173,17 @@ describe Gitsh::TokenParser do
         env: env, command: 'commit', args: [],
       )
     end
+
+    it 'parses blank lines' do
+      expect(parse(tokens([:EOS]))).to be_a Gitsh::Commands::Noop
+      expect(parse(tokens([:SPACE], [:EOS]))).to be_a Gitsh::Commands::Noop
+    end
+
+    it 'does not parse just a semicolon' do
+      expect {
+        parse(tokens([:SEMICOLON], [:EOS]))
+      }.to raise_exception RLTK::NotInLanguage
+    end
   end
 
   def parse(tokens)
