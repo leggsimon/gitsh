@@ -68,6 +68,7 @@ module Gitsh
       rule(/\$\(/, state) do
         @subshell_parens = 1
         push_state :subshell
+        [:SUBSHELL_START]
       end
     end
     rule(/[^()]+/, :subshell) { |t| [:SUBSHELL, t] }
@@ -79,6 +80,7 @@ module Gitsh
       @subshell_parens -= 1
       if @subshell_parens.zero?
         pop_state
+        [:SUBSHELL_END]
       else
         [:SUBSHELL, ')']
       end

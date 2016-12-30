@@ -96,7 +96,8 @@ describe Gitsh::Parser do
 
       result = parse(tokens(
         [:WORD, 'commit'], [:SPACE], [:WORD, '-m'], [:SPACE],
-        [:SUBSHELL, ':echo $message'], [:EOS],
+        [:SUBSHELL_START], [:SUBSHELL, ':echo $message'], [:SUBSHELL_END],
+        [:EOS],
       ))
 
       expect(Gitsh::Commands::Factory).to have_received(:build).with(

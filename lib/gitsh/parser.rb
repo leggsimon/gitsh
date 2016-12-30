@@ -8,6 +8,7 @@ require 'gitsh/commands/git_command'
 require 'gitsh/commands/internal_command'
 require 'gitsh/commands/shell_command'
 require 'gitsh/commands/noop'
+require 'gitsh/commands/tree'
 
 module Gitsh
   class Parser < RLTK::Parser
@@ -81,7 +82,9 @@ module Gitsh
     end
 
     production(:word, 'WORD+') { |words| words.inject(:+) }
-    production(:subshell, 'SUBSHELL+') { |subshells| subshells.inject(:+) }
+    production(:subshell, 'SUBSHELL_START SUBSHELL+ SUBSHELL_END') do |_, subshells, _|
+      subshells.inject(:+)
+    end
 
     finalize
   end
