@@ -65,7 +65,7 @@ describe Gitsh::Commands::GitCommand do
         env = double(
           :env,
           git_command: '/usr/bin/env git',
-          config_variables: {'foo': '1'},
+          config_variables: {foo: '1'},
         )
         mock_runner = double(:shell_command_runner, run: double)
         allow(env).to receive(:fetch).with('help.autocorrect').and_return('1')
