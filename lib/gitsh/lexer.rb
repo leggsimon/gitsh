@@ -89,11 +89,12 @@ module Gitsh
     def self.lex(string, file_name = nil, env = RLTK::Lexer::Environment.new(@start_state))
       tokens = super
 
-      if env.state == :hard_string
+      case env.state
+      when :hard_string
         tokens.insert(-2, RLTK::Token.new(:MISSING, '\''))
-      elsif env.state == :soft_string
+      when :soft_string
         tokens.insert(-2, RLTK::Token.new(:MISSING, '"'))
-      elsif env.state == :subshell
+      when :subshell
         tokens.insert(-2, RLTK::Token.new(:MISSING, ')'))
       end
 
