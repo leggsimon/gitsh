@@ -61,14 +61,12 @@ describe Gitsh::Parser do
         [:EOS],
       ))
 
+      expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
         env: env,
         command: 'commit',
-        args: [
-          Gitsh::Arguments::StringArgument.new('-m'),
-          Gitsh::Arguments::StringArgument.new('WIP'),
-        ],
+        args: [string('-m'), string('WIP')],
       )
     end
 
@@ -80,14 +78,12 @@ describe Gitsh::Parser do
         [:EOS],
       ))
 
+      expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
         env: env,
         command: 'commit',
-        args: [
-          Gitsh::Arguments::StringArgument.new('-m'),
-          Gitsh::Arguments::VariableArgument.new('message'),
-        ],
+        args: [string('-m'), var('message')],
       )
     end
 
@@ -100,14 +96,12 @@ describe Gitsh::Parser do
         [:EOS],
       ))
 
+      expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
         env: env,
         command: 'commit',
-        args: [
-          Gitsh::Arguments::StringArgument.new('-m'),
-          Gitsh::Arguments::Subshell.new(':echo $message'),
-        ],
+        args: [string('-m'), subshell(':echo $message')],
       )
     end
 
@@ -120,16 +114,14 @@ describe Gitsh::Parser do
         [:VAR, 'user.name'], [:EOS],
       ))
 
+      expect(result).to eq command
       expect(Gitsh::Commands::Factory).to have_received(:build).with(
         Gitsh::Commands::GitCommand,
         env: env,
         command: 'commit',
         args: [
-          Gitsh::Arguments::StringArgument.new('-m'),
-          Gitsh::Arguments::CompositeArgument.new([
-            Gitsh::Arguments::StringArgument.new('Written by: '),
-            Gitsh::Arguments::VariableArgument.new('user.name'),
-          ]),
+          string('-m'),
+          composite([string('Written by: '), var('user.name'),]),
         ],
       )
     end
@@ -207,5 +199,21 @@ describe Gitsh::Parser do
     command = double(:command)
     allow(Gitsh::Commands::Factory).to receive(:build).and_return(command)
     command
+  end
+
+  def string(value)
+    Gitsh::Arguments::StringArgument.new(value)
+  end
+
+  def var(name)
+    Gitsh::Arguments::VariableArgument.new(name)
+  end
+
+  def subshell(content)
+    Gitsh::Arguments::Subshell.new(content)
+  end
+
+  def composite(parts)
+    Gitsh::Arguments::CompositeArgument.new(parts)
   end
 end
