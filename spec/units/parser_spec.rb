@@ -106,7 +106,7 @@ describe Gitsh::Parser do
         command: 'commit',
         args: [
           Gitsh::Arguments::StringArgument.new('-m'),
-          Gitsh::Arguments::Subshell.new(':echo $message', interpreter_factory: double),
+          Gitsh::Arguments::Subshell.new(':echo $message'),
         ],
       )
     end

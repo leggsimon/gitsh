@@ -76,9 +76,7 @@ module Gitsh
     production(:argument_part) do
       clause(:word) { |word| Arguments::StringArgument.new(word) }
       clause(:VAR) { |var| Arguments::VariableArgument.new(var) }
-      clause(:subshell) do |subshell|
-        Arguments::Subshell.new(subshell, interpreter_factory: Interpreter)
-      end
+      clause(:subshell) { |subshell| Arguments::Subshell.new(subshell) }
     end
 
     production(:word, 'WORD+') { |words| words.inject(:+) }
